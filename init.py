@@ -47,7 +47,6 @@ class MyWin(QMainWindow, Ui_Widget):
             self.expression.hide()
 
     def calculate(self):
-        point_count = 300
         self.max_x = int(self.x_max.toPlainText())
         self.min_x = int(self.x_min.toPlainText())
         self.max_y = int(self.y_max.toPlainText())
@@ -60,13 +59,8 @@ class MyWin(QMainWindow, Ui_Widget):
         if self.max_y <= self.min_y :
             print("y range wrong!!!")
             return 0
-        area_point_count = point_count // (self.max_x - self.min_x)
-        x = []
-        for i in range(self.min_x, self.max_x):
-            temp = np.arange(i, i+1,
-                      round(1 / area_point_count, 2))
-            x += list(temp)
-        myfunction = Myfunction(x)
+
+        myfunction = Myfunction(self.min_x, self.max_x)
         myfunction.func_dict.__getitem__(self.function)()
         if(self.clear.isChecked()):
             plt.close()
@@ -80,15 +74,23 @@ class MyWin(QMainWindow, Ui_Widget):
         plt.title("Function img")
         plt.xlim(self.min_x, self.max_x)
         plt.ylim(self.min_y, self.max_y)
-        plt.plot(x, myfunction.y)
+        plt.plot(myfunction.x, myfunction.y)
         plt.savefig('./output.jpg')
 
         jpg = QtGui.QPixmap('./output.jpg').scaled(self.imgshow.width(), self.imgshow.height())
         self.imgshow.setPixmap(jpg)
 
 class Myfunction:
-    def __init__(self, value):
-        self.x = value
+    def __init__(self, min_x: int, max_x: int):
+        self.point_count = 300
+        x = []
+        area_point_count = self.point_count // (max_x - min_x)
+        for i in range(min_x, max_x):
+            temp = np.arange(i, i+1,
+                      round(1 / area_point_count, 2))
+            x += list(temp)
+
+        self.x = x
         self.y = []
         self.func_dict = ReMap({"sin\(x\)": self.sin, "cos\(x\)": self.cos, "ln\(x\)": self.log,
                                 "1/x": self.inverse, "polynomial .*": self.polynomial}, None)
